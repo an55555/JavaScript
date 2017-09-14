@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Title</title>
+    <style>
+        body{
+        }
+    </style>
+</head>
+<body>
+</body>
+<script>
+function timeFormat(format) {
+    var mat={
+        "Y+":2017,
+        "M+":10, //月份
+        "D+":11, //日
+        "h+":12, //小时
+        "m+":10, //分
+        "s+":22, //秒
+        "q+":2, //季度
+    }
+    var regex=new RegExp('['+Object.keys(mat).join('')+']','g')
+    var result=format.replace(regex,function (m) {
+        console.log(mat['YYYY'])
+        return '123'
+    })
+}
+console.log(timeFormat("YYYY-MM-DD hh:mm:ss"))
+</script>
+</html>

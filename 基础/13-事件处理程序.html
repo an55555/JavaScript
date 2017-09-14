@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title></title>
+</head>
+<body>
+<ul id="ul">
+    <li>
+        <div>
+            <p>1324</p>
+        </div>
+    </li>
+    <li>
+        <div>
+            <p>1324</p>
+        </div>
+    </li>
+    <li>
+        <div>
+            <p>1324</p>
+        </div>
+    </li>
+</ul>
+</body>
+<script>
+    var EvenUnit={
+        addHandler:function(element,type,hander) {
+            if(element.addEvenlistener){
+                element.addEvenlistener(type,hander,false);
+            }else if(element.attachEvent){
+                element.attachEvent('on'+type,hander);
+            }else{
+                element['on'+type]=hander;
+            }
+
+        },
+        removeHandler:function(element,type,hander) {
+            if(element.removeEvenlistener){
+                element.removeEvenlistener(type,hander,false);
+            }else if(element.detachEvent){
+                element.detachEvent('on'+type,hander);
+            }else{
+                element['on'+type]=null;
+            }
+        },
+        getEvent:function(event) {
+            return event?event:window.event;
+        },
+        getTarget:function(event) {
+            return event.target||event.srcElement;
+        },
+        preventDefault:function(event) {
+            if(event.preventDefault){
+                event.preventDefault()
+            }else{
+                event.returnValue=false;
+            }
+        },
+        stopPropagation:function() {
+            if(event.stopPropagation){
+                event.stopPropagation()
+            }else{
+                event.cancelBubble=true;
+            }
+        }
+    }
+    var _ul=document.getElementById("ul");
+    EvenUnit.addHandler(_ul,"click",function (e) {
+        var tar=EvenUnit.getTarget(e)
+
+        console.log(tar.tagName)
+    })
+    var arr=[1,2,3,4,5,6,7]
+    console.log(Array.prototype.indexOf.call(arr,4))
+</script>
+</html>
