@@ -315,3 +315,106 @@ promise
   //error
 })
 ```
+
+上面的化工路，第二种写法要好于第一处写法，理由是第二种写法可以捕获前面then方法执行中的错误，也更接近同步的写法（try/catch）。因此，建议总是使用
+catch方法,而不使用then方法的第二个参数 。
+
+跟传统的try/catch代码块不同的是，如果没有使用catch方法指定错误处理的回调函数 ，Promise对象抛出的错误不会传递到外层代码，即不会有任何反应。
+
+```javascript
+var someAsyncThing=()=>new Promise((resolve,reject)=>resolve(x+2))
+someAsyncThing().then(()=>{console.log('everything is great')})
+```
+
+上面代码中，someAsyncThing函数产生的Promise对象会报错，但是由于没有指定catch方法，这个错误不会捕获，也不会传递到外层代码，
+导致运行后没有任何输出 。注意，Chrome浏览器不遵守这条规定，它会抛出错误“ReferenceError:x is no defined”。
+
+```javascript
+var someAsyncThing=()=>new Promise((resolve,reject)=>{
+  resolve("ok")
+  setTimeout(()=>{throw new Error('test')},0)
+})
+someAsyncThing().then((val)=>{console.log(val)})
+//ok
+//Uncaught Error:test
+```
+
+上面代码中，Promise指定在下一轮“事件循环”再抛出错误，结果由于没有指定使用try...catch语句，就冒泡到最外层，成了未捕获的错误。因为此时，
+Promise的函数体已经运行结束了，所以这个错误是在Promise函数体外抛出的。
+
+Node.js有一个unhandledRejection事件，专门监听未捕获的reject错误。
+
+```javascript
+process.on('unhandledRejection',functioin(err,p){
+  console.error(err.stack)
+})
+```
+
+上面代码中，unhandledRejection事件的监听函数有两个参数，第一个是错误对象，第二个是报错的Promise实例，它可以用来了解发生错误的环境信息。。
+需要注意的是，catch方法返回的还是一个Promise对象，因此后面还可心接着调用then方法。
+
+```javascript
+var someAsyncThing=function(){
+  return new Promise(functioin(resolve,reject){
+    resolve(x+2)
+  })
+}
+someAsyncThing()
+.catch(function(error){
+  console.log('oh no',error);
+})
+.then(function(){
+  console.log('carry on');
+})
+// oh no [ReferenceError:x is not defind]
+// carry on
+
+```
+
+上面代码运行完catch方法指定的回调函数，会接着运行后面那个then方法指定的回调函数。如果没有报错，则会中过catch方法。
+
+```javascript
+Promise.resolve()
+.cathch(error=>{console.log('oh no',error)})
+.then(()=>{console.log('carry on')})
+//carry on
+```
+
+上面的代码因为没有报错，跳过了catch方法,直接执行后面的then方法。此时，要是then方法里面报错，就与前面 的catch无关了。
+
+catch方法之中，还能再抛出错误。
+
+```javascript
+var someAsyncThing=()=>new Promise((resolve,reject)=>{
+//下面一行会报错，因为x没有声明
+  resolve(x+2)
+}) 
+someAsyncThing().then(()=>someOtherAsyncThing())
+.catch(error=>{
+  console.log('oh no',error)
+  //下面一行会报错，因为y没有声明
+  y+2
+  })
+  .then(()=>{console.log('carry on')})
+  //oh no ReferenceError: x is not defined
+```
+
+上面代码中，catch方法抛出一个错误，因为后面没有别的catch方法了，导致这个错误不会被捕获，也不会传递到外层。如果必写下，结果就不一要样了。
+
+```javascript
+var someAsyncThing=()=>new Promise((resolve,reject)=>{
+//下面一行会报错，因为x没有声明
+  resolve(x+2)
+}) 
+someAsyncThing().then(()=>someOtherAsyncThing())
+.catch(error=>{
+  console.log('oh no',error)
+  //下面一行会报错，因为y没有声明
+  y+2
+  })
+  .catch((error)=>{console.log('carry on'+error)})
+  //oh no ReferenceError: x is not defined
+  //carry onReferenceError: y is not defined
+```
+
+上面代码串，第二个catch方法用来捕获，前一个catch方法抛出的错误。
