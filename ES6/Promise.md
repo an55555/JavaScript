@@ -1,3 +1,28 @@
+### Promise的含义
+
+Promise是异步编程的一种解决方案，比传统的解决方案--回调函数和事件--更合理和更强大。它由社区最早提出和实现，ES6将其写进了语言标准，统一了用法 ，
+原生提供了Promise对象。
+
+所谓Promise，简单说就是一个窗口，里面保存着某个未来才会结束的事件（通常是一个异步操作）的结果。从语法上说，Promise是一个对象，从它可以获取异步操作
+的消息。Promise提供统一的API，各种异步操作都可以用同样的方法进行处理。
+
+Promise对象有以下两个我特点。
+
+（1）对象的状态不受外界影响。Promise对象代表一个异步操作，有三种状态：Pending(进行中)、Resolved(已完成，又称Fulfilled)和Rejected(已失败)。
+只有异步操作的结果，可以决定当前是哪一种状态，任何其它操作都无法改变这种结果。这也是Promise这个名字的由来，它的英语意思就是“承诺”，表示其他手段无
+法改变。
+
+（2）一旦状态改变，就不会再变，任何时候都可以得到这个结果。Promise对象的状态改变，只有两种可能：从Pending变为Resolved和从Pending变为Rejected.
+只要这种情况发生，状态就凝固了，不会再变了，会一值保持这个结果。就算改变已经发生了，你再对Promise对象添加回调函数，也会立即得到这个结果。这与
+事件（Eveent）完全不同，事件的特点是，如果你错过了它，再去监听，是得不到结果。
+
+有了Promise对象，就可以将异步操作以同步操作的流程表达出来，避免了层层嵌套的回调函数。此时，Promise对象提供统一的接口，使得控制异步操作更加容易。
+
+Promise也有一些缺点。首先，无法取消Promise，一旦新建它就会立即执行，无法中途取消。其次，如果不设置回调函数，Promise内部抛出的错误，不会反应到外部
+。第三，当处于Pending状态时，无法得知当前进展到哪一个阶段（刚刚开始还是即将完成）。
+
+如果某些事件不断地反复发生，一般来说，使用stream模式是比部署Promise更好的选择
+
 ### 基本用法
 
 ES6规定，Promise对象是一个构造函数，用来生成Promise实例
@@ -455,11 +480,245 @@ Promise.all(promises).then(function(posts){
 
 下是另一个例子。
 
+```javascript
+
 const databasePromise=connectDatabase();
 const bookPromise=databasePromise.then(findAllBooks);
-
 const userPromise=databasePromise.then(getCurrentUser);
-
 Promise.all([booksPromise,userPromise])
 .then(([books,user])=>pickTopRecommentations(books,user));
+```
 上面代码中，booksPromise和userPromise是两个异步操作，只有等到它们的结果都返回了，才会触发 pickTopRecommentations这个回调函数 。
+
+### Primise.rase()
+
+Promise.race方法同样是将多个Promise实例，饱着成一个新的Promise实例。
+
+·```javascript
+var p=Promise.race([p1,p2,p3
+
+上面的代码中，只要p1、p2p3之中有一个实例率先改变状态，p的状态就跟着改变。那个训练场先改变的Promise实例的返回值 ，就会传递给p的回调函数。
+
+Promise.race方法的参数 与Promise.all方法一样，如果不是Promise实例，就会先调用下面讲到Promise.resolve方法，将参数 转为Promise实例，再进
+一步处理。
+
+下面是一个例子，如果指定时间内没有获得结果，就将Promise的状态变为reject,否则 变为resolve.
+
+```javascript
+var p=Promise.race([
+  fetch('/resource-that-may-take-a-while),
+  new Promise((resolve,reject)=>{
+    setTimeout(()=>{reject(new Error('request thmeout')),5000})
+  })
+])
+p.then(response=>console.log(response))
+p.catch(error=>console.log(error))
+```
+
+上面代码中，如果5秒之内fetch方法无法返回结果，变量p的状态就会变为rejected，从而触发catch方法指定的回调函数。
+
+### Promise.resolve()
+
+有时需要将现有对象转为Promise对象，Proise.resolve方法就起到这个作用。
+
+```javascript
+var jsPromise=Promise.resolve($.ajax('/whatever.json'));
+```
+
+上面代码将jQuery生成的deferred对象，转为一个新的Promise对象。
+
+Promise.resolve等价于下面的写法。
+
+```javascript
+Promise.resolve('foo')
+//等价于
+new Promise(resolve=>resolve('foo'))
+```
+
+Promise.resolve方法的参数分别分成四种情况。
+
+（1）参数是一个Promise实例
+
+如果参数是Promise实例，那么Promise.resolve将不做任何修改、原封不动地返回这个实例。
+
+（2）参数是一个thenable对象
+
+thenable对象指的是具有then方法的对象，比如下面这个对象。
+
+```javascript
+let thenable={
+  then:function(resolve,reject){
+    resolve(42)
+  }
+}
+```
+
+Promise.resolve方法会将这个对象转为Promise对象，然后就立即执行thenable对象的then方法。
+
+```javascript
+let thenable={
+  then:function(resolve,reject){
+    resolve(42)
+  }
+}
+var p1=Promise.resolve(thenable)
+p1.then(value=>console.log(value));  //42
+```
+
+上面代码中，thenable对象的then方法执行后，对象p1的状态就变为resolved，从而立执行最后那佧then方法指定的回调函数，输出42.
+
+(3) 参数不是具有then方法的对象，或根本就不是对象
+
+如果参数是一个原始值 ，或者是一个不具有then方法的对象，则Promise.resolve方法返回一个新的Promise对象，状态为Resolved。
+
+```javascript
+var p=Promise.resolve("Hello");
+p.then(s=>console.log(s))
+```
+
+(4)不带任何参数
+
+Promise.resolve方法允许调用时不带参数，直接返回一个Rsolved状态的Promise对象。
+
+所以，如果希望得到一个Promise对象，比较方便的方法就是直接调用Promise.resolve方法。
+
+```javascript
+var p=Promise.resolve()
+p.then(function(){
+
+})
+```
+
+Promise.reject()
+
+Promise.reject(reason)方法也会返回一个新的Promise实例，该实例的状态为rejected.它的参数用法与Promise.resolve方法完全一致。
+
+```javascript
+var p=Promise.reject('出错了');
+//等同于
+var p=new Promise((resolve,reject)=>reject("出错了"))
+p.then(null,s=>console.log(s));
+//出错了
+```
+
+上面代码生成一个Promise对象的实例p，状态为rejected,回调函数会立即执行。
+
+### 两个有用的附加方法
+
+ES6的Promise API提供的方法不是很多，有些有用的方法可以自己部署。下面介绍 如何 部署两个不在ES6之中、但很有用的方法。
+
+#### dome()
+
+Promise对象的回调链，不管以then方法或catch方法结尾，要是最后一个方法抛出错误，都有可能无法捕捉到（因为Promise内部的错误不会冒泡到全局）。
+因此 ，我们可以提供一个done方法，总是处于回调链的尾端，保证抛出任何可能出现的错误。
+
+```javascript
+asyncFunc()
+.then(f1)
+.catch(r1)
+.then(f2)
+.done();
+```
+
+它的实现代码相当简单。
+
+```javascript
+Promise.prototype.done=function(onFulfilled,onRejected){
+  this.then(onFulfilled,onRejected)
+  .catch(function(reason){
+    setTimeout(()=>{throw reason},0)
+  })
+}
+```
+
+从上面代码可见，done方法的使用，可以像then方法那样用，提供Fulfilled和Rejected状态的回调函数，也可以不提供任何参数。但不客情怎样，done都会捕捉到
+任何可能出现的错误，并向全局抛出。
+
+#### finally()
+
+finally方法用于指定不管Promisecf对象最后状态如何，都会执行的操作。它与done方法的最大区别 ，它接受一个普通的回调函数作为参数，该函数不管怎样都
+必须执行。
+
+下面是一个例子，服务器使用Promise处理请求，然后使用finally方法关掉服务器。
+
+```javascript
+server.listen(0)
+.then(function(){
+  //run test
+})
+.finally(server.stop);
+```
+
+它的实现也很简单。
+
+```javascript
+Promise.prototype.finally=function(callback){
+  let p=this.constructor;
+  return this.then(
+    value=>p.resolve(callback()).then(()=>value),
+    reason=>p.resolve(callback()).then(()=>{throw reason})
+  )
+}
+```
+
+### 应用
+
+#### 加载图片
+
+我们可以将图片的加载写成一个Promise，一旦加载完成，Promise的状态就发生变化。
+
+```javascript
+  function loadImgAsync(url){
+        return new Promise(function(resolve,reject){
+            var loadImg=new Image();
+            loadImg.src=url;
+            loadImg.onload=function(){
+                resolve(loadImg)
+            }
+            loadImg.onerror=function(){
+                reject(new Error("Could not load image at"+url))
+            }
+        })
+    }
+    loadImgAsync('').then(
+        function(img){
+            console.log("图片加载成功")
+            console.log(img)
+        },  function(err){
+            console.log(err)
+        }
+    )
+```
+
+#### Generator函数与Promise结合
+
+使用Generator函数管理流程，遇到异步操作的时候，通常返回一个Promise对象。
+```javascript
+function getFoo(){
+  return new Promise(resolve,reject){
+    resolve('foo');
+  }
+}
+var g=function*(){
+  try{
+    var foo=yield getFoo();
+    console.log(foo);
+  }catch(e){
+    console.log(e)
+  }
+};
+
+function run(generator){
+  var it=generator();
+  function go(result){
+    if(result.done) return result.value;
+    return result.value.then(function (value){
+      return go(it.next(value))
+    },function(error){
+      return go(it.throw(error))
+    })
+  }
+  go(it.next());
+}
+run(g)
+```
