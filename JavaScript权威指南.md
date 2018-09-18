@@ -98,3 +98,22 @@ x;
 one
 two
 ```
+
+### 3.3布尔值
+
+布尔值包含toString方法，可以将boolean转换为为`true`或者`false`
+
+```javaScript
+Boolean('').toString(); // 'false'
+```
+### 3.4 null和undefined
+
+```javaScript
+var a;
+null == a; // true
+null === a; // false
+```
+
+null和undefined都不包含任何属性和方法。
+
+如果侈杨将它们赋值给变量或者属性，或将它们作为参数传入函数，最佳选择是使用nulll
