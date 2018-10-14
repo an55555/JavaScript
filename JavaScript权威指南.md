@@ -178,3 +178,51 @@ null 转数字 是0
 ["8"] 转字符串 "8" 转数字8
 
 ["a"] 转字符串 使用jon()方法， 转数字NaN
+
+### 3.8.1 转换与相等性
+
+`null == undefined // true`
+
+### 3.8.2 显示类型转换
+
+做显示类型转换最简单的方法就是使用String()、Boolean()、Number()和Object()方法
+
+```javascript
+Number("3") // 3
+String(false) // "false"
+Boolean([]) // true
+Object(3) // new Number(e)
+```
+** Number类型的toString()方法：**
+
+转换为对应的参数的进制值，以string类型输出
+
+```javascript
+var n = 17
+n.toString(2) // 转换为"10001"
+n.toString(8) // 转换为"021"
+```
+
+** Number类型的toFixed()方法：**
+
+根据参数作为小数字位置输出，输出类型为字符串
+
+** Number类型的toExponential()方法：**
+
+使用指数记数法将数字转换为指数形式的字符串，其中小数点前只有一位，小数点火后的位数则由参数决定
+
+** Number类型的toPrecision()方法：**
+
+根据指定的有效数字位数将数字转换成字符串，但是只有在有效数字少于数字整数部分时，才会转换成指数形式
+
+```javascript
+var n = 123456.789
+n.toFixed(0) // 123456
+n.toFixed(2) // 123456.78
+n.toFixed(6) // 123456.789000
+n.toExponential(1) //1.2e+5
+n.toExponential(3) //1.235e+5
+n.toPrecision(4) //1.235e+5
+n.toPrecision(7) //123456.8
+n.ttoPrecisionl(10) //123456.7890
+```
