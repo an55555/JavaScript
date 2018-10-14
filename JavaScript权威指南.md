@@ -226,3 +226,5 @@ n.toPrecision(4) //1.235e+5
 n.toPrecision(7) //123456.8
 n.ttoPrecisionl(10) //123456.7890
 ```
+
+指数形式： aEb = a乘以10的b次方
