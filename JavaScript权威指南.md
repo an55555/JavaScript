@@ -221,7 +221,7 @@ n.toFixed(0) // 123456
 n.toFixed(2) // 123456.78
 n.toFixed(6) // 123456.789000
 n.toExponential(1) //1.2e+5
-n.toExponential(3) //1.235e+5
+n.toExponential(3) //1.235e+5 为啥不是1.234e+5 因为四舍五入了
 n.toPrecision(4) //1.235e+5
 n.toPrecision(7) //123456.8
 n.ttoPrecisionl(10) //123456.7890
